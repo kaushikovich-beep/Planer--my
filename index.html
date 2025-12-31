@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎄 Neon Planner — Новогодние Покупки</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            margin: 0;
+            padding: 15px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- НОВОГОДНИЙ ДОЖДИК (МИШУРА) --- */
+        body::before {
+            content: "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||";
+            position: fixed;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            font-family: serif;
+            font-size: 30px;
+            letter-spacing: 5px;
+            color: rgba(255, 215, 0, 0.4);
+            text-shadow: 0 0 10px gold, 20px 0 10px silver, 40px 0 10px lightblue;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            position: relative;
+        }
+
+        /* --- УКРАШЕНИЯ ПО УГЛАМ --- */
+        .decor-ball { position: fixed; font-size: 40px; z-index: -1; opacity: 0.8; pointer-events: none; }
+        .ball-1 { top: 20px; left: 10px; transform: rotate(-15deg); }
+        .ball-2 { top: 80px; right: 15px; transform: rotate(20deg); }
+        .ball-3 { bottom: 20px; left: 20px; }
+        .ball-4 { bottom: 50px; right: 20px; }
+
+        /* --- ШАПКА --- */
+        .header-profile {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .tree-img {
+            max-width: 150px;
+            height: auto;
+            /* Свечение елки */
+            filter: drop-shadow(0 0 25px rgba(50, 255, 50, 0.7));
+            animation: tree-glow 3s infinite alternate;
+        }
+
+        @keyframes tree-glow {
+            from { filter: drop-shadow(0 0 15px rgba(50, 255, 50, 0.5)); }
+            to { filter: drop-shadow(0 0 35px rgba(50, 255, 50, 0.9)); }
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            cursor: pointer;
+        }
+
+        #user-photo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffd700;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .photo-label {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffd700;
+            color: #000;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            margin: 0.5em 0;
+            font-size: 2.5em;
+            text-shadow: 0 0 15px #ff4500, 2px 2px #000;
+        }
+
+        /* --- СПИСОК --- */
+        #list-container {
+            border: 2px solid #2e8b57;
+            border-radius: 12px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            max-height: 50vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .item-row.is-checked {
+            background: rgba(50, 205, 50, 0.2);
+            border: 1px solid #32cd32;
+        }
+
+        .item-row input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            accent-color: #32cd32;
+            cursor: pointer;
+        }
+
+        .item-row textarea {
+            flex: 1;
+            min-height: 45px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 8px;
+            padding: 10px;
+            color: #000;
+            font-size: 16px;
+            border: none;
+            resize: none;
+        }
+
+        .item-row.is-checked textarea {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .price-input {
+            width: 90px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: right;
+            border: none;
+            font-weight: bold;
+        }
+
+        .del-btn {
+            background: #c41e3a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #totals-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            border: 2px dashed #ffd700;
+            text-align: right;
+        }
+
+        .total-line { margin: 8px 0; font-size: 1.1em; }
+        .total-line strong { color: #ffd700; font-size: 1.2em; }
+
+        #add-button {
+            display: block;
+            width: 100%;
+            max-width: 350px;
+            margin: 25px auto;
+            padding: 16px;
+            background: linear-gradient(#2e8b57, #1e5d3a);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        @media (max-width: 600px) {
+            .header-profile { flex-direction: column; gap: 15px; }
+            .decor-ball { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="decor-ball ball-1">🔴</div>
+<div class="decor-ball ball-2">✨</div>
+<div class="decor-ball ball-3">🎁</div>
+<div class="decor-ball ball-4">🔵</div>
+
+<div class="container">
+    <div class="header-profile">
+        <img src="https://cdn-icons-png.flaticon.com/512/632/632605.png" class="tree-img" alt="Ёлка">
+        
+        <div class="avatar-container" onclick="document.getElementById('file-input').click()">
+            <img id="user-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Покупатель">
+            <div class="photo-label">Фото хозяина</div>
+        </div>
+        <input type="file" id="file-input" accept="image/*" onchange="previewPhoto(this)">
+    </div>
+
+    <h1>🎄 Новогодние покупки</h1>
+
+    <div id="list-container"></div>
+
+    <div id="totals-container">
+        <div class="total-line">💰 Итого: <strong><span id="total-sum">0.00</span> ₽</strong></div>
+        <div class="total-line">⏳ Осталось: <strong><span id="remaining-sum">0.00</span> ₽</strong></div>
+        <div class="total-line" style="color:#32cd32">🎁 Куплено: <strong><span id="paid-sum">0.00</span> ₽</strong></div>
+    </div>
+
+    <button id="add-button">❄️ Добавить покупку</button>
+</div>
+
+<script>
+    const listContainer = document.getElementById('list-container');
+    const userPhoto = document.getElementById('user-photo');
+
+    function previewPhoto(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Photo = e.target.result;
+                userPhoto.src = base64Photo;
+                localStorage.setItem('neon-planner-photo-v3', base64Photo);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function saveItems() {
+        const items = [];
+        document.querySelectorAll('.item-row').forEach(row => {
+            const isChecked = row.querySelector('input[type="checkbox"]').checked;
+            row.classList.toggle('is-checked', isChecked);
+
+            items.push({
+                text: row.querySelector('textarea').value,
+                checked: isChecked,
+                price: row.querySelector('.price-input').value
+            });
+        });
+        localStorage.setItem('neon-planner-data-v3', JSON.stringify(items));
+        updateTotals();
+    }
+
+    function updateTotals() {
+        let total = 0, remaining = 0, paid = 0;
+        document.querySelectorAll('.item-row').forEach(row => {
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            const isChecked = row.querySelector('input[type="checkbox"]').checked;
+            total += price;
+            if (isChecked) paid += price; else remaining += price;
+        });
+        document.getElementById('total-sum').textContent = total.toFixed(2);
+        document.getElementById('remaining-sum').textContent = remaining.toFixed(2);
+        document.getElementById('paid-sum').textContent = paid.toFixed(2);
+    }
+
+    function addItem(text = '', checked = false, price = '') {
+        const row = document.createElement('div');
+        row.className = checked ? 'item-row is-checked' : 'item-row';
+        row.innerHTML = `
+            <input type="checkbox" ${checked ? 'checked' : ''}>
+            <textarea placeholder="Что купить...">${text}</textarea>
+            <input type="number" class="price-input" step="0.01" placeholder="0.00" value="${price}">
+            <button class="del-btn">✕</button>
+        `;
+
+        row.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', saveItems);
+        });
+        row.querySelector('input[type="checkbox"]').addEventListener('change', saveItems);
+        row.querySelector('.del-btn').onclick = () => { row.remove(); saveItems(); };
+        listContainer.appendChild(row);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedPhoto = localStorage.getItem('neon-planner-photo-v3');
+        if (savedPhoto) userPhoto.src = savedPhoto;
+
+        const savedList = localStorage.getItem('neon-planner-data-v3');
+        if (savedList) {
+            const items = JSON.parse(savedList);
+            if (items.length > 0) items.forEach(item => addItem(item.text, item.checked, item.price));
+            else addItem();
+        } else {
+            addItem();
+        }
+        updateTotals();
+    });
+
+    document.getElementById('add-button').onclick = () => { addItem(); saveItems(); };
+</script>
+</body>
+</html>
