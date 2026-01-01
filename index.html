@@ -10,7 +10,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f0c29">
     
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Neon%20Planner%22,%22short_name%22:%22Neon%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f0c29%22,%22theme_color%22:%22#ffd700%22}">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3523/3523887.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3523/3523887.png">
+
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Neon%20Planner%22,%22short_name%22:%22Neon%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f0c29%22,%22theme_color%22:%22#ffd700%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3523/3523887.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
 
     <style>
         :root { 
@@ -29,6 +32,7 @@
             background: var(--bg); color: var(--text);
             margin: 0; padding: 15px; min-height: 100vh; transition: all 0.3s ease;
             -webkit-tap-highlight-color: transparent;
+            user-select: none; /* Предотвращает случайное выделение текста при тапах */
         }
 
         .tinsel {
@@ -73,8 +77,9 @@
         .item-row textarea { 
             flex: 2; min-width: 180px; min-height: 38px; border-radius: 8px; padding: 8px; 
             font-size: 15px; border: none; resize: none; background: transparent; color: inherit;
+            user-select: text;
         }
-        .price-input { width: 65px; flex-shrink: 0; padding: 8px 4px; border-radius: 8px; border: none; font-weight: bold; text-align: center; background: rgba(255,255,255,0.1); color: inherit; }
+        .price-input { width: 65px; flex-shrink: 0; padding: 8px 4px; border-radius: 8px; border: none; font-weight: bold; text-align: center; background: rgba(255,255,255,0.1); color: inherit; user-select: text; }
         .del-btn { background: var(--red); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-weight: bold; flex-shrink: 0; }
 
         .item-row.is-checked { background: rgba(50, 205, 50, 0.2); }
