@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>🎄 Neon Planner Pro</title>
+    
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f0c29">
+    
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Neon%20Planner%22,%22short_name%22:%22Neon%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f0c29%22,%22theme_color%22:%22#ffd700%22}">
+
     <style>
         :root { 
             --gold: #ffd700; --green: #32cd32; --red: #c41e3a; 
@@ -22,6 +28,7 @@
             font-family: system-ui, -apple-system, sans-serif;
             background: var(--bg); color: var(--text);
             margin: 0; padding: 15px; min-height: 100vh; transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .tinsel {
@@ -56,7 +63,6 @@
         .avatar-container { position: relative; width: 100px; height: 100px; cursor: pointer; }
         #user-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); }
 
-        /* СПИСОК */
         #list-container {
             border: 2px solid var(--green); border-radius: 12px; padding: 10px;
             background: rgba(0, 0, 0, 0.2); max-height: 40vh; overflow-y: auto;
@@ -66,9 +72,9 @@
         
         .item-row textarea { 
             flex: 2; min-width: 180px; min-height: 38px; border-radius: 8px; padding: 8px; 
-            font-size: 15px; border: none; resize: none; 
+            font-size: 15px; border: none; resize: none; background: transparent; color: inherit;
         }
-        .price-input { width: 65px; flex-shrink: 0; padding: 8px 4px; border-radius: 8px; border: none; font-weight: bold; text-align: center; }
+        .price-input { width: 65px; flex-shrink: 0; padding: 8px 4px; border-radius: 8px; border: none; font-weight: bold; text-align: center; background: rgba(255,255,255,0.1); color: inherit; }
         .del-btn { background: var(--red); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-weight: bold; flex-shrink: 0; }
 
         .item-row.is-checked { background: rgba(50, 205, 50, 0.2); }
@@ -79,7 +85,6 @@
             border-radius: 15px; border: 2px dashed var(--gold); text-align: right;
         }
 
-        /* КАРТЫ */
         .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px; }
         .card-item {
             position: relative; aspect-ratio: 3/2; background: var(--card-bg);
@@ -87,6 +92,7 @@
         }
         .card-item img { width: 100%; height: 100%; object-fit: cover; }
         .card-controls { position: absolute; top: 5px; right: 5px; display: flex; gap: 5px; }
+        .mini-btn { width: 28px; height: 28px; border-radius: 50%; border: none; color: white; font-weight: bold; font-size: 14px; }
 
         #viewer {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -159,7 +165,6 @@
     let wakeLock = null;
     let currentSlot = null;
 
-    // --- УЖИМАТЕЛЬ ФОТО ---
     function processImage(input, type) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
@@ -185,7 +190,6 @@
         }
     }
 
-    // --- ЛОГИКА ИНТЕРФЕЙСА ---
     function toggleTheme() {
         document.body.classList.toggle('light-theme');
         localStorage.setItem('neon-theme', document.body.classList.contains('light-theme'));
@@ -268,14 +272,8 @@
     function closeViewer() { document.getElementById('viewer').style.display = 'none'; if (history.state?.viewingCard) history.back(); }
     window.onpopstate = () => { document.getElementById('viewer').style.display = 'none'; };
 
-    // --- ИСПРАВЛЕННЫЙ БЭКАП (БЕЗ ВЫЛЕТА ЯРЛЫКА) ---
     function exportBackup() {
-        const data = { 
-            profile: localStorage.getItem('neon-profile-v7'), 
-            items: localStorage.getItem('neon-data-v7'), 
-            cards: localStorage.getItem('neon-cards-v7'), 
-            theme: localStorage.getItem('neon-theme') 
-        };
+        const data = { profile: localStorage.getItem('neon-profile-v7'), items: localStorage.getItem('neon-data-v7'), cards: localStorage.getItem('neon-cards-v7'), theme: localStorage.getItem('neon-theme') };
         const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -288,13 +286,10 @@
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
-                // Сохраняем в память
                 localStorage.setItem('neon-profile-v7', data.profile || "");
                 localStorage.setItem('neon-data-v7', data.items || "[]");
                 localStorage.setItem('neon-cards-v7', data.cards || "[]");
                 localStorage.setItem('neon-theme', data.theme || "false");
-                
-                // Вместо перезагрузки — мгновенно обновляем интерфейс
                 loadAppData(); 
                 alert("Данные успешно восстановлены!");
             } catch(err) { alert("Ошибка файла бэкапа!"); }
@@ -303,33 +298,22 @@
     }
 
     function loadAppData() {
-        // Очищаем текущие списки
         document.getElementById('list-container').innerHTML = "";
         document.getElementById('cards-grid').innerHTML = "";
-        
-        // Ставим тему
         if (localStorage.getItem('neon-theme') === 'true') document.body.classList.add('light-theme');
         else document.body.classList.remove('light-theme');
-        
-        // Ставим фото профиля
         const savedPhoto = localStorage.getItem('neon-profile-v7');
         document.getElementById('user-photo').src = savedPhoto || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-        
-        // Загружаем покупки
         const savedData = localStorage.getItem('neon-data-v7');
         if (savedData && savedData !== "[]") JSON.parse(savedData).forEach(i => addItem(i.text, i.checked, i.price)); 
         else addItem();
-        
-        // Загружаем карты
         const savedCards = localStorage.getItem('neon-cards-v7');
         if (savedCards && savedCards !== "[]") JSON.parse(savedCards).forEach(src => addCardSlot(src)); 
         else addCardSlot();
-        
         updateTotals();
     }
 
     window.onload = loadAppData;
-
     document.getElementById('add-button').onclick = () => { addItem(); saveItems(); };
     document.getElementById('add-card-btn').onclick = () => addCardSlot();
 </script>
