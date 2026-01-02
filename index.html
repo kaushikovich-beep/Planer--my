@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5,322 +6,416 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>🎄 Neon Planner Pro</title>
     
+    <!-- PWA & Mobile Meta -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f0c29">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Neon%20Planner%20Pro%22,%22short_name%22:%22Neon%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f0c29%22,%22theme_color%22:%22#ffd700%22}">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3523/3523887.png">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3523/3523887.png">
-
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Neon%20Planner%22,%22short_name%22:%22Neon%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f0c29%22,%22theme_color%22:%22#ffd700%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3523/3523887.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
-
     <style>
-        :root { 
-            --gold: #ffd700; --green: #32cd32; --red: #c41e3a; 
-            --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            --card-bg: rgba(255, 255, 255, 0.07); --text: #fff;
-        }
-        
-        body.light-theme {
-            --bg: linear-gradient(135deg, #e0eafc, #cfdef3);
-            --card-bg: rgba(0, 0, 0, 0.05); --text: #24243e;
-        }
+      @keyframes neonPulse {
+        0%, 100% { opacity: 0.8; text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700; }
+        50% { opacity: 1; text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; }
+      }
+      @keyframes toySwing {
+        0%, 100% { transform: rotate(-5deg); transform-origin: top center; }
+        50% { transform: rotate(5deg); transform-origin: top center; }
+      }
+      @keyframes rainGlow {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.8; }
+      }
+      
+      .neon-text-pulse { animation: neonPulse 2s infinite ease-in-out; }
+      
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      
+      body {
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+      
+      input, textarea {
+        user-select: text;
+      }
 
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: var(--bg); color: var(--text);
-            margin: 0; padding: 15px; min-height: 100vh; transition: all 0.3s ease;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none; /* Предотвращает случайное выделение текста при тапах */
-        }
+      /* Christmas Frame Styles */
+      .spruce-branch {
+        background-image: radial-gradient(circle at 2px 2px, #064e3b 1px, transparent 0);
+        background-size: 4px 4px;
+        position: relative;
+      }
+      .spruce-branch::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(45deg, #064e3b 25%, #065f46 50%, #064e3b 75%);
+        opacity: 0.4;
+      }
 
-        .tinsel {
-            position: fixed; top: -10px; left: 0; width: 100%; font-size: 30px; 
-            color: rgba(255, 215, 0, 0.4); z-index: 100; pointer-events: none; white-space: nowrap;
-        }
+      .christmas-toy {
+        animation: toySwing 3s infinite ease-in-out;
+      }
 
-        .container { max-width: 800px; margin: 40px auto; position: relative; }
-
-        .top-bar { display: flex; justify-content: space-between; margin-bottom: 15px; }
-        .icon-btn { 
-            background: var(--card-bg); border: 1px solid var(--gold); border-radius: 50%; 
-            width: 45px; height: 45px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;
-        }
-
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .tab-btn {
-            padding: 12px 20px; border-radius: 20px; border: 1px solid var(--gold);
-            background: var(--card-bg); color: var(--text); font-weight: bold; cursor: pointer;
-        }
-        .tab-btn.active { background: var(--gold); color: #000; box-shadow: 0 0 15px var(--gold); }
-
-        .section { display: none; }
-        .section.active { display: block; }
-
-        .header-profile {
-            display: flex; justify-content: center; align-items: center; gap: 30px;
-            margin-bottom: 20px; padding: 20px; background: var(--card-bg);
-            border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);
-        }
-        .tree-img { max-width: 80px; filter: drop-shadow(0 0 10px var(--green)); }
-        .avatar-container { position: relative; width: 100px; height: 100px; cursor: pointer; }
-        #user-photo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); }
-
-        #list-container {
-            border: 2px solid var(--green); border-radius: 12px; padding: 10px;
-            background: rgba(0, 0, 0, 0.2); max-height: 40vh; overflow-y: auto;
-        }
-        .item-row { display: flex; background: var(--card-bg); margin-bottom: 10px; border-radius: 10px; overflow-x: auto; scrollbar-width: none; }
-        .row-content { display: flex; align-items: center; min-width: 100%; padding: 8px; gap: 8px; }
-        
-        .item-row textarea { 
-            flex: 2; min-width: 180px; min-height: 38px; border-radius: 8px; padding: 8px; 
-            font-size: 15px; border: none; resize: none; background: transparent; color: inherit;
-            user-select: text;
-        }
-        .price-input { width: 65px; flex-shrink: 0; padding: 8px 4px; border-radius: 8px; border: none; font-weight: bold; text-align: center; background: rgba(255,255,255,0.1); color: inherit; user-select: text; }
-        .del-btn { background: var(--red); color: white; border: none; border-radius: 8px; padding: 8px 12px; font-weight: bold; flex-shrink: 0; }
-
-        .item-row.is-checked { background: rgba(50, 205, 50, 0.2); }
-        .shopping-mode-active .item-row.is-checked { display: none; }
-
-        #totals-container {
-            margin-top: 15px; padding: 15px; background: rgba(0, 0, 0, 0.4);
-            border-radius: 15px; border: 2px dashed var(--gold); text-align: right;
-        }
-
-        .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px; }
-        .card-item {
-            position: relative; aspect-ratio: 3/2; background: var(--card-bg);
-            border: 2px dashed var(--gold); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;
-        }
-        .card-item img { width: 100%; height: 100%; object-fit: cover; }
-        .card-controls { position: absolute; top: 5px; right: 5px; display: flex; gap: 5px; }
-        .mini-btn { width: 28px; height: 28px; border-radius: 50%; border: none; color: white; font-weight: bold; font-size: 14px; }
-
-        #viewer {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center;
-        }
-        #viewer img { max-width: 100%; max-height: 100%; }
-
-        .backup-zone { display: flex; justify-content: center; gap: 10px; margin-top: 20px; padding-bottom: 20px; }
-        .small-btn { font-size: 11px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--gold); background: var(--card-bg); color: var(--text); }
-
-        #add-button, #add-card-btn {
-            display: block; width: 100%; max-width: 300px; margin: 20px auto;
-            padding: 16px; background: linear-gradient(var(--green), #1e5d3a);
-            color: white; border: none; border-radius: 15px; font-size: 1.1em; font-weight: bold;
-        }
+      .rain-line {
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(to bottom, transparent, #ffd700, transparent);
+        animation: rainGlow 2s infinite ease-in-out;
+      }
     </style>
+<link rel="stylesheet" href="/index.css">
 </head>
-<body class="dark-theme">
+<body class="bg-[#0f0c29] text-white overflow-x-hidden">
+    <div id="root"></div>
 
-<div class="tinsel">||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</div>
+    <!-- React Application Logic -->
+    <script type="module">
+        import React, { useState, useEffect, useRef } from 'https://esm.sh/react@19';
+        import ReactDOM from 'https://esm.sh/react-dom@19/client';
 
-<div class="container" id="main-app">
-    <div class="top-bar">
-        <button class="icon-btn" onclick="toggleTheme()">🌗</button>
-        <button class="icon-btn" id="shop-mode-btn" onclick="toggleShoppingMode()">⚡</button>
-    </div>
-
-    <div class="header-profile">
-        <img src="https://cdn-icons-png.flaticon.com/512/632/632605.png" class="tree-img">
-        <div class="avatar-container" onclick="document.getElementById('file-input').click()">
-            <img id="user-photo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
-        </div>
-        <input type="file" id="file-input" style="display:none" accept="image/*" onchange="processImage(this, 'profile')">
-    </div>
-
-    <div class="tabs">
-        <button class="tab-btn active" id="tab-list" onclick="switchTab('planner')">📝 Список</button>
-        <button class="tab-btn" id="tab-cards" onclick="switchTab('cards')">💳 Карты</button>
-    </div>
-
-    <div id="planner" class="section active">
-        <div id="list-container"></div>
-        <div id="totals-container">
-            <div>💰 Итого: <strong><span id="total-sum">0.00</span> ₽</strong></div>
-            <div style="color:var(--green)">🎁 Куплено: <strong><span id="paid-sum">0.00</span> ₽</strong></div>
-        </div>
-        <button id="add-button">❄️ Добавить покупку</button>
-    </div>
-
-    <div id="cards" class="section">
-        <div class="cards-grid" id="cards-grid"></div>
-        <button id="add-card-btn">➕ Добавить карту</button>
-    </div>
-
-    <div class="backup-zone">
-        <button class="small-btn" onclick="exportBackup()">💾 Сохранить бэкап</button>
-        <button class="small-btn" onclick="document.getElementById('import-file').click()">📂 Восстановить</button>
-        <input type="file" id="import-file" style="display:none" accept=".json" onchange="importBackup(this)">
-    </div>
-</div>
-
-<div id="viewer" onclick="closeViewer()">
-    <img id="viewer-img" src="">
-</div>
-
-<input type="file" id="card-upload" style="display:none" accept="image/*" onchange="processImage(this, 'card')">
-
-<script>
-    let isShoppingMode = false;
-    let wakeLock = null;
-    let currentSlot = null;
-
-    function processImage(input, type) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width, height = img.height;
-                    const MAX_WIDTH = 800;
-                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const compressed = canvas.toDataURL('image/jpeg', 0.6);
-                    if (type === 'profile') {
-                        document.getElementById('user-photo').src = compressed;
-                        localStorage.setItem('neon-profile-v7', compressed);
-                    } else { renderCardSlot(currentSlot, compressed); saveCards(); }
+        // --- Image Utilities ---
+        const compressImage = (file, maxWidth = 800) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                    img.src = e.target.result;
                 };
-                img.src = e.target.result;
+                reader.readAsDataURL(file);
+            });
+        };
+
+        // --- Main App Component ---
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('planner');
+            const [items, setItems] = useState([]);
+            const [cards, setCards] = useState([]);
+            const [theme, setTheme] = useState('dark');
+            const [isShoppingMode, setIsShoppingMode] = useState(false);
+            const [viewingCard, setViewingCard] = useState(null);
+            
+            const wakeLockRef = useRef(null);
+            const cardInputRef = useRef(null);
+            const currentCardIndex = useRef(null);
+
+            // Persistence
+            useEffect(() => {
+                const savedTheme = localStorage.getItem('neon-theme');
+                const savedItems = localStorage.getItem('neon-data-v7');
+                const savedCards = localStorage.getItem('neon-cards-v7');
+
+                if (savedTheme) setTheme(savedTheme === 'true' ? 'light' : 'dark');
+                if (savedItems) {
+                    const parsed = JSON.parse(savedItems);
+                    setItems(parsed.map(i => ({ ...i, id: i.id || Math.random().toString(36).substr(2, 9) })));
+                } else {
+                    setItems([{ id: 'init', text: '', checked: false, price: '' }]);
+                }
+                if (savedCards) setCards(JSON.parse(savedCards));
+            }, []);
+
+            useEffect(() => {
+                localStorage.setItem('neon-theme', theme === 'light' ? 'true' : 'false');
+                localStorage.setItem('neon-data-v7', JSON.stringify(items));
+                localStorage.setItem('neon-cards-v7', JSON.stringify(cards));
+            }, [theme, items, cards]);
+
+            // Wake Lock
+            useEffect(() => {
+                const manageWakeLock = async () => {
+                    if (isShoppingMode && 'wakeLock' in navigator) {
+                        try { wakeLockRef.current = await navigator.wakeLock.request('screen'); } catch (err) {}
+                    } else if (wakeLockRef.current) {
+                        await wakeLockRef.current.release();
+                        wakeLockRef.current = null;
+                    }
+                };
+                manageWakeLock();
+            }, [isShoppingMode]);
+
+            // Handlers
+            const handleAddItem = () => {
+                setItems([...items, { id: Math.random().toString(36).substr(2, 9), text: '', checked: false, price: '' }]);
             };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
 
-    function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        localStorage.setItem('neon-theme', document.body.classList.contains('light-theme'));
-    }
+            const updateItem = (id, updates) => {
+                setItems(items.map(item => item.id === id ? { ...item, ...updates } : item));
+            };
 
-    async function toggleShoppingMode() {
-        isShoppingMode = !isShoppingMode;
-        document.getElementById('main-app').classList.toggle('shopping-mode-active');
-        document.getElementById('shop-mode-btn').style.boxShadow = isShoppingMode ? "0 0 15px var(--gold)" : "none";
-        if (isShoppingMode && 'wakeLock' in navigator) {
-            try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
-        } else if (wakeLock) { wakeLock.release(); wakeLock = null; }
-    }
+            const removeItem = (id) => {
+                setItems(items.filter(item => item.id !== id));
+            };
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        document.getElementById('tab-' + (tabId === 'planner' ? 'list' : 'cards')).classList.add('active');
-    }
+            const moveCheckedItems = (direction) => {
+                setItems(prevItems => {
+                    const newItems = [...prevItems];
+                    const checkedIndices = newItems
+                        .map((item, index) => item.checked ? index : -1)
+                        .filter(index => index !== -1);
 
-    function saveItems() {
-        const items = [];
-        document.querySelectorAll('.item-row').forEach(row => {
-            items.push({ text: row.querySelector('textarea').value, checked: row.querySelector('input[type="checkbox"]').checked, price: row.querySelector('.price-input').value });
-        });
-        localStorage.setItem('neon-data-v7', JSON.stringify(items));
-        updateTotals();
-    }
+                    if (direction === 'up') {
+                        for (const index of checkedIndices) {
+                            if (index > 0) {
+                                [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+                            }
+                        }
+                    } else {
+                        for (let i = checkedIndices.length - 1; i >= 0; i--) {
+                            const index = checkedIndices[i];
+                            if (index < newItems.length - 1) {
+                                [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+                            }
+                        }
+                    }
+                    return newItems;
+                });
+            };
 
-    function updateTotals() {
-        let total = 0, paid = 0;
-        document.querySelectorAll('.item-row').forEach(row => {
-            const price = parseFloat(row.querySelector('.price-input').value) || 0;
-            const isChecked = row.querySelector('input[type="checkbox"]').checked;
-            row.classList.toggle('is-checked', isChecked);
-            total += price; if (isChecked) paid += price;
-        });
-        document.getElementById('total-sum').textContent = total.toFixed(2);
-        document.getElementById('paid-sum').textContent = paid.toFixed(2);
-    }
+            const handleCardUpload = async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                    const compressed = await compressImage(file);
+                    if (currentCardIndex.current !== null) {
+                        const newCards = [...cards];
+                        newCards[currentCardIndex.current] = compressed;
+                        setCards(newCards);
+                        currentCardIndex.current = null;
+                    } else {
+                        setCards([...cards, compressed]);
+                    }
+                }
+            };
 
-    function addItem(text = '', checked = false, price = '') {
-        const row = document.createElement('div');
-        row.className = 'item-row';
-        row.innerHTML = `<div class="row-content"><input type="checkbox" ${checked ? 'checked' : ''} onchange="saveItems()"><textarea placeholder="Название..." oninput="saveItems()">${text}</textarea><input type="number" class="price-input" placeholder="0" value="${price}" oninput="saveItems()"><button class="del-btn" onclick="this.closest('.item-row').remove();saveItems()">✕</button></div>`;
-        document.getElementById('list-container').appendChild(row);
-        if(checked) row.classList.add('is-checked');
-    }
+            const exportBackup = () => {
+                const data = { items, cards, theme };
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `neon_planner_backup.json`;
+                a.click();
+            };
 
-    function saveCards() {
-        const cards = [];
-        document.querySelectorAll('.card-item img').forEach(img => cards.push(img.src));
-        localStorage.setItem('neon-cards-v7', JSON.stringify(cards));
-    }
+            const importBackup = (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.items) setItems(data.items);
+                        if (data.cards) setCards(data.cards);
+                        if (data.theme) setTheme(data.theme);
+                        alert("Данные успешно восстановлены!");
+                    } catch (err) { alert("Ошибка импорта!"); }
+                };
+                reader.readAsText(file);
+            };
 
-    function renderCardSlot(slot, imgSrc = null) {
-        if (imgSrc) {
-            slot.innerHTML = `<img src="${imgSrc}"><div class="card-controls"><button class="mini-btn" style="background:var(--gold);color:#000" onclick="event.stopPropagation(); currentSlot=this.closest('.card-item'); document.getElementById('card-upload').click()">✎</button><button class="mini-btn" style="background:var(--red)" onclick="event.stopPropagation(); this.closest('.card-item').remove(); saveCards();">✕</button></div>`;
-        } else {
-            slot.innerHTML = `<span style="font-size:10px;color:var(--gold);text-align:center">ДОБАВИТЬ<br>КАРТУ</span>`;
-        }
-    }
+            const totalSum = items.reduce((acc, i) => acc + (parseFloat(i.price) || 0), 0);
+            const paidSum = items.reduce((acc, i) => acc + (i.checked ? (parseFloat(i.price) || 0) : 0), 0);
+            const displayedItems = isShoppingMode ? items.filter(i => !i.checked) : items;
 
-    function addCardSlot(imgSrc = null) {
-        const slot = document.createElement('div');
-        slot.className = 'card-item';
-        renderCardSlot(slot, imgSrc);
-        slot.onclick = () => {
-            const img = slot.querySelector('img');
-            if (img) {
-                document.getElementById('viewer-img').src = img.src;
-                document.getElementById('viewer').style.display = 'flex';
-                history.pushState({viewingCard: true}, "");
-            } else { currentSlot = slot; document.getElementById('card-upload').click(); }
+            return React.createElement('div', { 
+                className: `min-h-screen transition-colors duration-300 relative ${theme === 'dark' ? 'bg-[#0f0c29] text-white' : 'bg-[#e0eafc] text-[#24243e]'}` 
+            }, [
+                // --- CHRISTMAS FRAME DECORATION ---
+                // Spruce Top Bar
+                React.createElement('div', {
+                    key: 'spruce-top',
+                    className: "fixed top-0 left-0 w-full h-8 z-[60] spruce-branch shadow-lg flex justify-around items-end overflow-visible pointer-events-none"
+                }, [
+                    React.createElement('span', { key: 't1', className: "christmas-toy text-2xl -mb-4" }, '🔴'),
+                    React.createElement('span', { key: 't2', className: "christmas-toy text-xl -mb-2 delay-75" }, '🔔'),
+                    React.createElement('span', { key: 't3', className: "christmas-toy text-2xl -mb-4 delay-150" }, '🟡'),
+                    React.createElement('span', { key: 't4', className: "christmas-toy text-xl -mb-2 delay-200" }, '🎁'),
+                    React.createElement('span', { key: 't5', className: "christmas-toy text-2xl -mb-4 delay-300" }, '🔴')
+                ]),
+
+                // Side Rain (Tinsel)
+                React.createElement('div', { key: 'rain-left', className: "fixed left-0 top-0 h-full w-4 flex justify-around pointer-events-none z-[55] opacity-40" }, 
+                    [1,2,3].map(i => React.createElement('div', { key: i, className: "rain-line" }))
+                ),
+                React.createElement('div', { key: 'rain-right', className: "fixed right-0 top-0 h-full w-4 flex justify-around pointer-events-none z-[55] opacity-40" }, 
+                    [1,2,3].map(i => React.createElement('div', { key: i, className: "rain-line" }))
+                ),
+
+                // Corner Spruce Branches
+                React.createElement('div', { key: 'c-tl', className: "fixed top-0 left-0 w-24 h-24 z-[70] pointer-events-none opacity-80" }, 
+                    React.createElement('span', { className: "text-4xl absolute top-2 left-2" }, '🌲')
+                ),
+                React.createElement('div', { key: 'c-tr', className: "fixed top-0 right-0 w-24 h-24 z-[70] pointer-events-none opacity-80 scale-x-[-1]" }, 
+                    React.createElement('span', { className: "text-4xl absolute top-2 left-2" }, '🌲')
+                ),
+                React.createElement('div', { key: 'c-bl', className: "fixed bottom-0 left-0 w-24 h-24 z-[70] pointer-events-none opacity-80 scale-y-[-1]" }, 
+                    React.createElement('span', { className: "text-4xl absolute top-2 left-2" }, '🌲')
+                ),
+                React.createElement('div', { key: 'c-br', className: "fixed bottom-0 right-0 w-24 h-24 z-[70] pointer-events-none opacity-80 scale-x-[-1] scale-y-[-1]" }, 
+                    React.createElement('span', { className: "text-4xl absolute top-2 left-2" }, '🌲')
+                ),
+
+                // Existing Tinsel Text (for extra layering)
+                React.createElement('div', { 
+                    key: 'tinsel',
+                    className: "fixed top-0 left-0 w-full overflow-hidden whitespace-nowrap opacity-20 pointer-events-none z-50 text-2xl text-[#ffd700] select-none"
+                }, "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"),
+
+                React.createElement('div', { key: 'main', className: "max-w-xl mx-auto px-4 py-12 relative z-10" }, [
+                    // Top Controls
+                    React.createElement('div', { key: 'controls', className: "flex justify-between items-center mb-6" }, [
+                        React.createElement('button', {
+                            key: 'theme-btn',
+                            onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark'),
+                            className: "w-12 h-12 rounded-full border border-[#ffd700] flex items-center justify-center bg-white/10 hover:bg-white/20 transition-all text-xl shadow-[0_0_10px_rgba(255,215,0,0.3)]"
+                        }, theme === 'dark' ? '☀️' : '🌙'),
+                        React.createElement('button', {
+                            key: 'shop-btn',
+                            onClick: () => setIsShoppingMode(!isShoppingMode),
+                            className: `w-12 h-12 rounded-full border border-[#ffd700] flex items-center justify-center transition-all text-xl ${isShoppingMode ? 'bg-[#ffd700] shadow-[0_0_15px_#ffd700] text-black' : 'bg-white/10 shadow-[0_0_10px_rgba(255,215,0,0.3)]'}`
+                        }, '⚡')
+                    ]),
+
+                    // Tabs
+                    React.createElement('div', { key: 'tabs', className: "flex justify-center gap-4 mb-6" }, [
+                        React.createElement('button', {
+                            key: 'tab-p',
+                            onClick: () => setActiveTab('planner'),
+                            className: `px-6 py-3 rounded-2xl border border-[#ffd700] font-bold transition-all ${activeTab === 'planner' ? 'bg-[#ffd700] text-black shadow-[0_0_15px_#ffd700]' : 'bg-white/10'}`
+                        }, '📝 Список'),
+                        React.createElement('button', {
+                            key: 'tab-c',
+                            onClick: () => setActiveTab('cards'),
+                            className: `px-6 py-3 rounded-2xl border border-[#ffd700] font-bold transition-all ${activeTab === 'cards' ? 'bg-[#ffd700] text-black shadow-[0_0_15px_#ffd700]' : 'bg-white/10'}`
+                        }, '💳 Карты')
+                    ]),
+
+                    // Content
+                    React.createElement('div', { key: 'content', className: "min-h-[50vh]" }, [
+                        activeTab === 'planner' ? React.createElement('div', { key: 'planner-view' }, [
+                            React.createElement('div', { className: "flex items-stretch gap-2 mb-6" }, [
+                                React.createElement('button', {
+                                    key: 'm-down',
+                                    onClick: () => moveCheckedItems('down'),
+                                    className: "w-10 rounded-2xl border border-[#ffd700] bg-white/5 flex items-center justify-center text-[#ffd700] hover:bg-[#ffd700]/20 transition-all active:scale-95 text-xl font-bold shadow-inner"
+                                }, '↓'),
+                                React.createElement('div', { className: "flex-1 bg-black/20 border-2 border-[#32cd32] rounded-2xl p-4 max-h-[65vh] overflow-y-auto no-scrollbar space-y-3 shadow-2xl backdrop-blur-sm" }, [
+                                    displayedItems.length === 0 && React.createElement('div', { className: "text-center py-8 opacity-50 italic" }, isShoppingMode ? "Все куплено!" : "Список пуст"),
+                                    displayedItems.map(item => React.createElement('div', {
+                                        key: item.id,
+                                        className: `flex items-center gap-3 p-3 rounded-xl transition-all overflow-x-auto no-scrollbar ${item.checked ? 'bg-[#32cd32]/20 opacity-80 border-[#32cd32]/40 border' : 'bg-white/5 border border-white/10'}`
+                                    }, React.createElement('div', { className: "flex items-center gap-3 min-w-full" }, [
+                                        React.createElement('input', {
+                                            type: 'checkbox',
+                                            checked: item.checked,
+                                            onChange: (e) => updateItem(item.id, { checked: e.target.checked }),
+                                            className: "w-5 h-5 accent-[#32cd32] shrink-0"
+                                        }),
+                                        React.createElement('textarea', {
+                                            value: item.text,
+                                            onChange: (e) => updateItem(item.id, { text: e.target.value }),
+                                            placeholder: "Название...",
+                                            className: "flex-1 bg-transparent border-none outline-none resize-none text-sm p-1 placeholder:opacity-50 h-8 no-scrollbar min-w-[150px]"
+                                        }),
+                                        React.createElement('div', { className: "flex items-center gap-2 shrink-0" }, [
+                                            React.createElement('input', {
+                                                type: 'number',
+                                                value: item.price,
+                                                onChange: (e) => updateItem(item.id, { price: e.target.value }),
+                                                placeholder: "0",
+                                                className: "w-16 bg-white/10 text-center rounded-lg p-1 font-bold text-xs"
+                                            }),
+                                            React.createElement('button', {
+                                                onClick: () => removeItem(item.id),
+                                                className: "w-8 h-8 rounded-lg bg-red-600/80 flex items-center justify-center font-bold hover:bg-red-700 transition-colors"
+                                            }, '✕')
+                                        ])
+                                    ])))
+                                ]),
+                                React.createElement('button', {
+                                    key: 'm-up',
+                                    onClick: () => moveCheckedItems('up'),
+                                    className: "w-10 rounded-2xl border border-[#ffd700] bg-white/5 flex items-center justify-center text-[#ffd700] hover:bg-[#ffd700]/20 transition-all active:scale-95 text-xl font-bold shadow-inner"
+                                }, '↑')
+                            ]),
+                            // Totals
+                            React.createElement('div', { className: "bg-black/40 border-2 border-dashed border-[#ffd700] rounded-2xl p-4 text-right mb-6 shadow-lg" }, [
+                                React.createElement('div', { className: "text-lg" }, ['💰 Итого: ', React.createElement('strong', { className: "text-[#ffd700]" }, totalSum.toFixed(2) + ' ₽')]),
+                                React.createElement('div', { className: "text-[#32cd32] text-sm" }, ['🎁 Куплено: ', React.createElement('strong', null, paidSum.toFixed(2) + ' ₽')])
+                            ]),
+                            // Add button
+                            React.createElement('button', {
+                                onClick: handleAddItem,
+                                className: "w-full max-w-sm mx-auto block py-4 bg-gradient-to-r from-[#32cd32] to-[#1e5d3a] rounded-2xl font-bold text-lg shadow-[0_5px_15px_rgba(50,205,50,0.4)] hover:brightness-110 active:scale-95 transition-all"
+                            }, '❄️ Добавить покупку')
+                        ]) : React.createElement('div', { key: 'cards-view' }, [
+                            React.createElement('div', { className: "grid grid-cols-2 gap-4 mb-8" }, [
+                                cards.map((src, idx) => React.createElement('div', {
+                                    key: idx,
+                                    className: "relative aspect-[3/2] rounded-xl overflow-hidden border-2 border-dashed border-[#ffd700] group cursor-pointer shadow-lg"
+                                }, [
+                                    React.createElement('img', { src, className: "w-full h-full object-cover", onClick: () => setViewingCard(src) }),
+                                    React.createElement('div', { className: "absolute top-2 right-2 flex gap-2" }, [
+                                        React.createElement('button', { onClick: () => { currentCardIndex.current = idx; cardInputRef.current.click(); }, className: "w-8 h-8 rounded-full bg-[#ffd700] text-black flex items-center justify-center font-bold shadow-md" }, '✎'),
+                                        React.createElement('button', { onClick: () => setCards(cards.filter((_, i) => i !== idx)), className: "w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold shadow-md" }, '✕')
+                                    ])
+                                ])),
+                                React.createElement('div', {
+                                    onClick: () => { currentCardIndex.current = null; cardInputRef.current.click(); },
+                                    className: "aspect-[3/2] rounded-xl border-2 border-dashed border-[#ffd700] bg-white/5 flex flex-col items-center justify-center cursor-pointer text-[#ffd700] font-bold text-center p-2 hover:bg-white/10 transition-colors"
+                                }, [
+                                    React.createElement('span', { className: "text-3xl mb-1" }, '＋'),
+                                    React.createElement('span', { className: "text-[10px] leading-tight" }, 'ДОБАВИТЬ КАРТУ')
+                                ])
+                            ]),
+                            React.createElement('input', { type: 'file', ref: cardInputRef, className: "hidden", accept: "image/*", onChange: handleCardUpload })
+                        ])
+                    ]),
+
+                    // Footer Tools
+                    React.createElement('div', { className: "flex justify-center gap-3 mt-8 py-6 border-t border-white/10" }, [
+                        React.createElement('button', { onClick: exportBackup, className: "px-4 py-2 text-[10px] rounded-lg border border-[#ffd700] bg-white/5 uppercase tracking-wider font-bold hover:bg-[#ffd700]/10 transition-colors" }, '💾 Сохранить бэкап'),
+                        React.createElement('button', { onClick: () => document.getElementById('import-file').click(), className: "px-4 py-2 text-[10px] rounded-lg border border-[#ffd700] bg-white/5 uppercase tracking-wider font-bold hover:bg-[#ffd700]/10 transition-colors" }, '📂 Восстановить'),
+                        React.createElement('input', { type: 'file', id: "import-file", className: "hidden", accept: ".json", onChange: importBackup })
+                    ])
+                ]),
+
+                // Modal
+                viewingCard && React.createElement('div', {
+                    onClick: () => setViewingCard(null),
+                    className: "fixed inset-0 bg-black/95 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300"
+                }, [
+                    React.createElement('img', { src: viewingCard, className: "max-w-full max-h-full rounded-lg shadow-2xl" }),
+                    React.createElement('button', { className: "absolute top-6 right-6 text-white text-3xl font-light" }, '✕')
+                ])
+            ]);
         };
-        document.getElementById('cards-grid').appendChild(slot);
-    }
 
-    function closeViewer() { document.getElementById('viewer').style.display = 'none'; if (history.state?.viewingCard) history.back(); }
-    window.onpopstate = () => { document.getElementById('viewer').style.display = 'none'; };
-
-    function exportBackup() {
-        const data = { profile: localStorage.getItem('neon-profile-v7'), items: localStorage.getItem('neon-data-v7'), cards: localStorage.getItem('neon-cards-v7'), theme: localStorage.getItem('neon-theme') };
-        const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `neon_planner_backup.json`;
-        a.click();
-    }
-
-    function importBackup(input) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = JSON.parse(e.target.result);
-                localStorage.setItem('neon-profile-v7', data.profile || "");
-                localStorage.setItem('neon-data-v7', data.items || "[]");
-                localStorage.setItem('neon-cards-v7', data.cards || "[]");
-                localStorage.setItem('neon-theme', data.theme || "false");
-                loadAppData(); 
-                alert("Данные успешно восстановлены!");
-            } catch(err) { alert("Ошибка файла бэкапа!"); }
-        };
-        reader.readAsText(input.files[0]);
-    }
-
-    function loadAppData() {
-        document.getElementById('list-container').innerHTML = "";
-        document.getElementById('cards-grid').innerHTML = "";
-        if (localStorage.getItem('neon-theme') === 'true') document.body.classList.add('light-theme');
-        else document.body.classList.remove('light-theme');
-        const savedPhoto = localStorage.getItem('neon-profile-v7');
-        document.getElementById('user-photo').src = savedPhoto || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-        const savedData = localStorage.getItem('neon-data-v7');
-        if (savedData && savedData !== "[]") JSON.parse(savedData).forEach(i => addItem(i.text, i.checked, i.price)); 
-        else addItem();
-        const savedCards = localStorage.getItem('neon-cards-v7');
-        if (savedCards && savedCards !== "[]") JSON.parse(savedCards).forEach(src => addCardSlot(src)); 
-        else addCardSlot();
-        updateTotals();
-    }
-
-    window.onload = loadAppData;
-    document.getElementById('add-button').onclick = () => { addItem(); saveItems(); };
-    document.getElementById('add-card-btn').onclick = () => addCardSlot();
-</script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
